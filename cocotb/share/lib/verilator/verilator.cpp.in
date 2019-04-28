@@ -1,0 +1,24 @@
+#include "V%TOPLEVEL%.h"
+#include "verilated.h"
+#include "verilated_vpi.h"
+
+vluint64_t main_time = 0;       // Current simulation time
+
+double sc_time_stamp () {       // Called by $time in Verilog
+    return main_time;           // converts to double, to match
+    // what SystemC does
+}
+
+extern "C" {
+void vlog_startup_routines_bootstrap(void);
+}
+
+int main(int argc, char** argv, char** env) {
+    Verilated::commandArgs(argc, argv);
+    V%TOPLEVEL%* top = new V%TOPLEVEL%;
+    vlog_startup_routines_bootstrap();
+    VerilatedVpi::callStartupCbs();
+    while (!Verilated::gotFinish()) { top->eval(); VerilatedVpi::callValueCbs(); main_time++; }
+    delete top;
+    exit(0);
+}

@@ -1,0 +1,77 @@
+###############################################################################
+# Copyright (c) 2013 Potential Ventures Ltd
+# Copyright (c) 2019 Stefan Wallentowitz
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of Potential Ventures Ltd,
+#       SolarFlare Communications Inc nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL POTENTIAL VENTURES LTD BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
+
+ifneq ($(VHDL_SOURCES),)
+
+results.xml:
+	@echo "Skipping simulation as VHDL is not supported on simulator=$(SIM)"
+debug: results.xml
+clean::
+
+else
+
+CMD := verilator
+
+COMPILE_ARGS += --vpi -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
+
+$(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $(SIM_BUILD)
+	sed -e 's/%TOPLEVEL%/$(TOPLEVEL)/g' $< > $@
+
+# Compilation phase
+$(SIM_BUILD)/V$(TOPLEVEL): $(SIM_BUILD)/verilator.cpp $(COCOTB_LIBS) $(COCOTB_VPI_LIB) $(VERILOG_SOURCES) $(CUSTOM_COMPILE_DEPS)
+	$(CMD) -cc --exe -Mdir $(SIM_BUILD) -DCOCOTB_SIM=1 --top-module $(TOPLEVEL) $(COMPILE_ARGS) $(EXTRA_ARGS) $(VERILOG_SOURCES) $(SIM_BUILD)/verilator.cpp
+	make -C $(SIM_BUILD) -f V$(TOPLEVEL).mk
+
+ifeq ($(OS),Msys)
+
+EXTRA_LIBS := -lvpi
+EXTRA_LIBDIRS := -L$(ICARUS_BIN_DIR)/../lib
+OLD_PATH := $(shell echo "$(PATH)" | sed 's/(/\\(/g' | sed 's/)/\\)/g' | sed 's/ /\\ /g')
+LIB_LOAD = PATH=$(OLD_PATH):$(LIB_DIR)
+NEW_PYTHONPATH:=$(shell python -c "import sys, os; print(':'.join(['/'+dir.replace(os.sep,'/').replace(':','') for dir in sys.path]))")
+PWD = $(shell pwd)
+
+else
+LIB_LOAD := LD_LIBRARY_PATH=$(LIB_DIR):$(LD_LIBRARY_PATH)
+NEW_PYTHONPATH := $(PYTHONPATH)
+endif
+
+results.xml: $(SIM_BUILD)/V$(TOPLEVEL) $(CUSTOM_SIM_DEPS) $(COCOTB_LIBS) $(COCOTB_VPI_LIB)
+	PYTHONPATH=$(LIB_DIR):$(PWD):$(NEW_PYTHONPATH) $(LIB_LOAD) LD_LIBRARY_PATH=$(LIB_DIR) MODULE=$(MODULE) \
+        TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) TOPLEVEL_LANG=$(TOPLEVEL_LANG) COCOTB_SIM=1 \
+        $< -M $(LIB_DIR) -m gpivpi $(SIM_BUILD)/sim.vvp $(SIM_ARGS) $(EXTRA_ARGS) $(PLUSARGS)
+
+debug: $(SIM_BUILD)/V$(TOPLEVEL) $(CUSTOM_SIM_DEPS) $(COCOTB_LIBS) $(COCOTB_VPI_LIB)
+	PYTHONPATH=$(LIB_DIR):$(PWD):$(NEW_PYTHONPATH) $(LIB_LOAD) LD_LIBRARY_PATH=$(LIB_DIR) MODULE=$(MODULE) \
+        TESTCASE=$(TESTCASE) TOPLEVEL=$(TOPLEVEL) TOPLEVEL_LANG=$(TOPLEVEL_LANG) COCOTB_SIM=1 \
+        gdb --args $< -M $(LIB_DIR) -m gpivpi $(SIM_BUILD)/sim.vvp $(SIM_ARGS) $(EXTRA_ARGS) $(PLUSARGS)
+
+
+
+endif
