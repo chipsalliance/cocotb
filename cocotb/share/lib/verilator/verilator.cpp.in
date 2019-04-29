@@ -16,9 +16,20 @@ void vlog_startup_routines_bootstrap(void);
 int main(int argc, char** argv, char** env) {
     Verilated::commandArgs(argc, argv);
     V%TOPLEVEL%* top = new V%TOPLEVEL%;
+
     vlog_startup_routines_bootstrap();
-    VerilatedVpi::callStartupCbs();
-    while (!Verilated::gotFinish()) { top->eval(); VerilatedVpi::callValueCbs(); main_time++; }
+    VerilatedVpi::callCbs(cbStartOfSimulation);
+
+    while (!Verilated::gotFinish()) {
+        top->eval();
+        VerilatedVpi::callValueCbs();
+        VerilatedVpi::callTimedCbs();
+        VerilatedVpi::callCbs(cbReadWriteSynch);
+        main_time++;
+    }
+
+    VerilatedVpi::callCbs(cbEndOfSimulation);
+
     delete top;
-    exit(0);
+    return 0;
 }
