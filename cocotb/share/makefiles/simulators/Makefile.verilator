@@ -38,6 +38,25 @@ else
 
 CMD := verilator
 
+ifeq ($(shell which $(CMD) 2>/dev/null),)
+# Verilator is not in PATH, lets start searching for it
+  ifdef VERILATOR_ROOT
+    CMD = $(VERILATOR_ROOT)/bin/verilator
+  else
+    PKG_CONFIG ?= pkg-config
+    ifneq ($(shell which $(PKG_CONFIG) 2>/dev/null),)
+      # Use pkg-config to find it
+      EXEC = $(shell $(PKG_CONFIG) --variable=exec_prefix verilator)
+      ifeq ($(EXEC),)
+        $(error Cannot find verilator, either set VERILATOR_ROOT or add it to PKG_CONFIG_PATH.)
+      endif
+      CMD = $(EXEC)/bin/verilator
+    else
+        $(error Cannot find verilator, either set VERILATOR_ROOT or add it to PKG_CONFIG_PATH.)
+    endif
+  endif
+endif
+
 COMPILE_ARGS += --vpi -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
 
 $(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $(SIM_BUILD)
