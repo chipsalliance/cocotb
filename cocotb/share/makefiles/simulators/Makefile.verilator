@@ -57,6 +57,12 @@ ifeq ($(shell which $(CMD) 2>/dev/null),)
   endif
 endif
 
+ifeq ($(VERILATOR_SIM_DEBUG), 1)
+  COMPILE_ARGS += --debug
+  PLUSARGS += +verilator+debug
+  SIM_BUILD_FLAGS += -DVL_DEBUG
+endif
+
 COMPILE_ARGS += --vpi -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
 
 $(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $(SIM_BUILD)
@@ -65,7 +71,7 @@ $(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $
 # Compilation phase
 $(SIM_BUILD)/V$(TOPLEVEL): $(SIM_BUILD)/verilator.cpp $(COCOTB_LIBS) $(COCOTB_VPI_LIB) $(VERILOG_SOURCES) $(CUSTOM_COMPILE_DEPS)
 	$(CMD) -cc --exe -Mdir $(SIM_BUILD) -DCOCOTB_SIM=1 --top-module $(TOPLEVEL) $(COMPILE_ARGS) $(EXTRA_ARGS) $(VERILOG_SOURCES) $(SIM_BUILD)/verilator.cpp
-	make -C $(SIM_BUILD) -f V$(TOPLEVEL).mk
+	CPPFLAGS=$(SIM_BUILD_FLAGS) make -C $(SIM_BUILD) -f V$(TOPLEVEL).mk
 
 ifeq ($(OS),Msys)
 
