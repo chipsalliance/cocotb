@@ -98,5 +98,7 @@ debug: $(SIM_BUILD)/V$(TOPLEVEL) $(CUSTOM_SIM_DEPS) $(COCOTB_LIBS) $(COCOTB_VPI_
         gdb --args $< -M $(LIB_DIR) -m gpivpi $(SIM_BUILD)/sim.vvp $(SIM_ARGS) $(EXTRA_ARGS) $(PLUSARGS)
 
 
+clean::
+	@rm -rf $(SIM_BUILD)
 
 endif
