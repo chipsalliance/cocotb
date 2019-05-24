@@ -408,6 +408,9 @@ GpiObjHdl *VpiImpl::get_root_handle(const char* name)
 
     // vpi_iterate with a ref of NULL returns the top level module
     iterator = vpi_iterate(vpiModule, NULL);
+    if (!iterator) {
+        iterator = vpi_iterate(vpiScope, NULL);
+    }
     check_vpi_error();
     if (!iterator) {
         LOG_INFO("Nothing visible via VPI");
@@ -442,6 +445,9 @@ GpiObjHdl *VpiImpl::get_root_handle(const char* name)
     LOG_ERROR("VPI: Couldn't find root handle %s", name);
 
     iterator = vpi_iterate(vpiModule, NULL);
+    if (!iterator) {
+        iterator = vpi_iterate(vpiScope, NULL);
+    }
 
     for (root = vpi_scan(iterator); root != NULL; root = vpi_scan(iterator)) {
 
