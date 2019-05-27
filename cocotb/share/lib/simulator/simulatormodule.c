@@ -932,6 +932,7 @@ static void add_module_constants(PyObject* simulator)
     rc |= PyModule_AddIntConstant(simulator, "UNKNOWN",       GPI_UNKNOWN);
     rc |= PyModule_AddIntConstant(simulator, "MEMORY",        GPI_MEMORY);
     rc |= PyModule_AddIntConstant(simulator, "MODULE",        GPI_MODULE);
+    rc |= PyModule_AddIntConstant(simulator, "SCOPE",         GPI_SCOPE);
     rc |= PyModule_AddIntConstant(simulator, "NET",           GPI_NET);
     rc |= PyModule_AddIntConstant(simulator, "PARAMETER",     GPI_PARAMETER);
     rc |= PyModule_AddIntConstant(simulator, "REG",           GPI_REGISTER);

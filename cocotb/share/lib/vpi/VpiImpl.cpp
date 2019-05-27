@@ -125,6 +125,9 @@ gpi_objtype_t to_gpi_objtype(int32_t vpitype)
         case vpiStringVar:
             return GPI_STRING;
 
+        case vpiScope:
+            return GPI_SCOPE;
+
         default:
             LOG_DEBUG("Unable to map VPI type %d onto GPI type", vpitype);
             return GPI_UNKNOWN;
@@ -195,6 +198,9 @@ GpiObjHdl* VpiImpl::create_gpi_obj_from_handle(vpiHandle new_hdl,
             }
             break;
         }
+        case vpiScope:
+            new_obj = new VpiObjHdl(this, new_hdl, to_gpi_objtype(type));
+            break;
         default:
             /* We should only print a warning here if the type is really Verilog,
                It could be VHDL as some simulators allow querying of both languages

@@ -745,6 +745,7 @@ def SimHandle(handle, path=None):
     """Factory function to create the correct type of :any:`SimHandle` object."""
     _type2cls = {
         simulator.MODULE:      HierarchyObject,
+        simulator.SCOPE:       HierarchyObject,
         simulator.STRUCTURE:   HierarchyObject,
         simulator.REG:         ModifiableObject,
         simulator.NETARRAY:    NonHierarchyIndexableObject,
@@ -767,6 +768,7 @@ def SimHandle(handle, path=None):
 
     # Special case for constants
     if simulator.get_const(handle) and not t in [simulator.MODULE,
+                                                 simulator.SCOPE,
                                                  simulator.STRUCTURE,
                                                  simulator.NETARRAY,
                                                  simulator.GENARRAY]:
