@@ -15,7 +15,7 @@ void vlog_startup_routines_bootstrap(void);
 
 int main(int argc, char** argv, char** env) {
     Verilated::commandArgs(argc, argv);
-    V%TOPLEVEL%* top = new V%TOPLEVEL%;
+    V%TOPLEVEL%* top = new V%TOPLEVEL%("COCOTB");
 
     vlog_startup_routines_bootstrap();
     VerilatedVpi::callCbs(cbStartOfSimulation);
