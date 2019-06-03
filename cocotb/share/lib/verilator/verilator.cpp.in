@@ -15,6 +15,11 @@ double sc_time_stamp () {       // Called by $time in Verilog
 
 extern "C" {
 void vlog_startup_routines_bootstrap(void);
+
+vpiHandle vpi_register_systf(p_vpi_systf_data)
+{
+	return 0;
+}
 }
 
 int main(int argc, char** argv, char** env) {
