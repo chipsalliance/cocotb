@@ -67,6 +67,10 @@ ifeq ($(VERILATOR_TRACE),1)
   EXTRA_ARGS += --trace
 endif
 
+ifneq ($(VERILATOR_THREADS),)
+  EXTRA_ARGS += --threads $(VERILATOR_THREADS)
+endif
+
 COMPILE_ARGS += --vpi -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
 
 $(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $(SIM_BUILD)
