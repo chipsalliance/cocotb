@@ -26,6 +26,9 @@ int main(int argc, char** argv, char** env) {
     Verilated::commandArgs(argc, argv);
     V%TOPLEVEL%* top = new V%TOPLEVEL%("COCOTB");
 
+    // Enable TOP module bypassing
+    VerilatedVpi::setBypassTop(true);
+
     vlog_startup_routines_bootstrap();
     VerilatedVpi::callCbs(cbStartOfSimulation);
 
