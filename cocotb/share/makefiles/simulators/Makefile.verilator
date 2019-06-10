@@ -71,7 +71,7 @@ ifneq ($(VERILATOR_THREADS),)
   EXTRA_ARGS += --threads $(VERILATOR_THREADS)
 endif
 
-COMPILE_ARGS += --vpi -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
+COMPILE_ARGS += --vpi --public-flat-rw -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
 
 $(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $(SIM_BUILD)
 	sed -e 's/%TOPLEVEL%/$(TOPLEVEL)/g' $< > $@
