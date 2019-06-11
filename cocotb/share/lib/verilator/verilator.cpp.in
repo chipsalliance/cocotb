@@ -2,6 +2,10 @@
 #include "verilated.h"
 #include "verilated_vpi.h"
 
+#if VM_TRACE
+# include <verilated_vcd_c.h>
+#endif
+
 vluint64_t main_time = 0;       // Current simulation time
 
 double sc_time_stamp () {       // Called by $time in Verilog
@@ -19,6 +23,14 @@ int main(int argc, char** argv, char** env) {
 
     vlog_startup_routines_bootstrap();
     VerilatedVpi::callCbs(cbStartOfSimulation);
+
+#if VM_TRACE
+    Verilated::traceEverOn(true);
+
+    VerilatedVcdC *tfp = new VerilatedVcdC;
+    top->trace(tfp, 99);
+    tfp->open("dump.vcd");
+#endif
 
     // Simple optimization. In endian_swapper gives about ~40% speedup
     // but can produce errors in some cases, so hidden behind switch
@@ -55,6 +67,10 @@ int main(int argc, char** argv, char** env) {
 
         // Call registered timed callbacks (e.g. clock timer)
         VerilatedVpi::callTimedCbs();
+
+#if VM_TRACE
+        tfp->dump(main_time);
+#endif
         main_time++;
 
         // Call registered NextSimTime
@@ -63,6 +79,10 @@ int main(int argc, char** argv, char** env) {
     }
 
     VerilatedVpi::callCbs(cbEndOfSimulation);
+
+#if VM_TRACE
+    tfp->close();
+#endif
 
     delete top;
     return 0;

@@ -63,6 +63,10 @@ ifeq ($(VERILATOR_SIM_DEBUG), 1)
   SIM_BUILD_FLAGS += -DVL_DEBUG
 endif
 
+ifeq ($(VERILATOR_TRACE),1)
+  EXTRA_ARGS += --trace
+endif
+
 COMPILE_ARGS += --vpi -LDFLAGS "-L $(PWD)/build/libs/x86_64/ -lvpi -lgpi -lcocotb -lgpilog -lcocotbutils"
 
 $(SIM_BUILD)/verilator.cpp: $(COCOTB_SHARE_DIR)/lib/verilator/verilator.cpp.in $(SIM_BUILD)
@@ -100,5 +104,6 @@ debug: $(SIM_BUILD)/V$(TOPLEVEL) $(CUSTOM_SIM_DEPS) $(COCOTB_LIBS) $(COCOTB_VPI_
 
 clean::
 	@rm -rf $(SIM_BUILD)
+	@rm -f dump.vcd
 
 endif
