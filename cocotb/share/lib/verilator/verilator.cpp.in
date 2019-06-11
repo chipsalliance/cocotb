@@ -20,12 +20,46 @@ int main(int argc, char** argv, char** env) {
     vlog_startup_routines_bootstrap();
     VerilatedVpi::callCbs(cbStartOfSimulation);
 
+    // Simple optimization. In endian_swapper gives about ~40% speedup
+    // but can produce errors in some cases, so hidden behind switch
+    bool skip_eval_value_change = false;
+    const char *skip_eval_value_change_c = getenv("VERILATOR_SKIP_EVAL_VC");
+    if (skip_eval_value_change_c && (skip_eval_value_change_c[0] == '1'))
+        skip_eval_value_change = true;
+
     while (!Verilated::gotFinish()) {
-        top->eval();
-        VerilatedVpi::callValueCbs();
+        bool again = true;
+
+        // We must evaluate whole design until we process all 'events'
+        while (again) {
+            again = false;
+
+            // Evaluate design
+            top->eval();
+
+            // Call Value Change callbacks as eval()
+            // can modify signals values
+            if (!skip_eval_value_change)
+                VerilatedVpi::callValueCbs();
+
+            // Call registered Read-Write callbacks
+            again = VerilatedVpi::callCbs(cbReadWriteSynch);
+
+            // Call Value Change callbacks as cbReadWriteSynch
+            // can modify signals values
+            VerilatedVpi::callValueCbs();
+        }
+
+        // Call ReadOnly callbacks
+        VerilatedVpi::callCbs(cbReadOnlySynch);
+
+        // Call registered timed callbacks (e.g. clock timer)
         VerilatedVpi::callTimedCbs();
-        VerilatedVpi::callCbs(cbReadWriteSynch);
         main_time++;
+
+        // Call registered NextSimTime
+        // It should be called in new slot before everything else
+        VerilatedVpi::callCbs(cbNextSimTime);
     }
 
     VerilatedVpi::callCbs(cbEndOfSimulation);
