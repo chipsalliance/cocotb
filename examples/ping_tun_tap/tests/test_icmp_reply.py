@@ -46,7 +46,7 @@ def create_tun(name="tun0", ip="192.168.255.1"):
     TUNSETOWNER = TUNSETIFF + 2
     IFF_TUN = 0x0001
     IFF_NO_PI = 0x1000
-    tun = open('/dev/net/tun', 'r+b')
+    tun = open('/dev/net/tun', 'r+b', buffering=0)
     tun_num = int(name.split('tun')[-1])
 
     # Try and create tun device until we find a name not in use
@@ -54,7 +54,7 @@ def create_tun(name="tun0", ip="192.168.255.1"):
     while True:
         try:
             name = 'tun{}'.format(tun_num)
-            ifr = struct.pack('16sH', name, IFF_TUN | IFF_NO_PI)
+            ifr = struct.pack('16sH', name.encode('utf-8'), IFF_TUN | IFF_NO_PI)
             cocotb.log.info(name)
             fcntl.ioctl(tun, TUNSETIFF, ifr)
             break
@@ -118,18 +118,18 @@ def tun_tap_example_test(dut):
         packet = os.read(fd, 2048)
         cocotb.log.info("Received a packet!")
 
-        if packet[9] == '\x01' and packet[20] == '\x08':
+        if packet[9] == 0x1 and packet[20] == 0x8:
             cocotb.log.debug("Packet is an ICMP echo request")
             pingcounter += 1
         else:
             cocotb.log.info("Packet is no ICMP echo request, throwing away packet")
             continue
 
-        stream_in.append(packet)
+        stream_in.append("".join(map(chr, packet)))
         result = yield stream_out.wait_for_recv()
 
         cocotb.log.info("Rtl replied!")
-        os.write(fd, str(result))
+        os.write(fd, bytes(map(ord, result)))
 
         if pingcounter == 5:
             break
