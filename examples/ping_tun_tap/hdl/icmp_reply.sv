@@ -53,15 +53,15 @@ module icmp_reply (
     input                                  stream_out_ready
 );
 
-parameter S_IDLE = 3'b000;
-parameter S_RECV_PACKET = 3'b001;
-parameter S_MODIFY_PACKET = 3'b010;
-parameter S_SEND_PACKET = 3'b011;
+parameter S_IDLE = 2'b00;
+parameter S_RECV_PACKET = 2'b01;
+parameter S_MODIFY_PACKET = 2'b10;
+parameter S_SEND_PACKET = 2'b11;
 
-reg [2:0]       state;
-reg [31:0]      packet_buffer [63:0];
+reg [1:0]       state;
+reg [31:0]      packet_buffer [127:0];
 
-reg [4:0]       rx_word_ptr, tx_word_ptr;
+reg [6:0]       rx_word_ptr, tx_word_ptr;
 reg [1:0]       empty_saved;
 
 
@@ -126,7 +126,7 @@ always @(posedge clk or negedge reset_n) begin
                 if (stream_out_ready) begin
                     tx_word_ptr                 <= tx_word_ptr + 1;
 
-                    if (tx_word_ptr)
+                    if (tx_word_ptr > 0)
                         stream_out_startofpacket<= 1'b0;
 
                     if (tx_word_ptr == rx_word_ptr - 1) begin
