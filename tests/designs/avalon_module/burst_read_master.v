@@ -368,10 +368,12 @@ module burst_read_master (
     defparam the_master_to_user_fifo.underflow_checking = "OFF";
     defparam the_master_to_user_fifo.overflow_checking = "OFF";
 
+`ifndef VERILATOR
 initial begin
      $dumpfile("waveform.vcd");
      $dumpvars(0, burst_read_master);
 end
+`endif
 
 
 endmodule

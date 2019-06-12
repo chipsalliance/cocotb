@@ -92,6 +92,7 @@ test_if struct_var;
 
 and test_and_gate(and_output, stream_in_ready, stream_in_valid);
 
+`ifndef VERILATOR
 initial begin
      $dumpfile("waveform.vcd");
      $dumpvars(0,sample_module);
@@ -99,6 +100,7 @@ initial begin
 //   TODO: Move into a separate test
 //     #500000 $fail_test("Test timed out, failing...");
 end
+`endif
 
 reg[3:0] temp;
 parameter NUM_OF_MODULES = 4;

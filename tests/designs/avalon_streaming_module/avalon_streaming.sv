@@ -43,9 +43,11 @@ always @ (posedge clk or negedge reset) begin
     end
 end
 
+`ifndef VERILATOR
 initial begin
      $dumpfile("waveform.vcd");
      $dumpvars;
 end
+`endif
 
 endmodule : avalon_streaming

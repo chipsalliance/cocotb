@@ -53,8 +53,10 @@ always @(stream_out_ready)
 
 
 initial begin
+`ifndef VERILATOR
      $dumpfile("waveform.vcd");
      $dumpvars(0,close_module);
+`endif
      #10 $info;
      #10 $info("This is an info message");
      #10 $warning;
