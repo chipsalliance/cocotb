@@ -698,6 +698,9 @@ class AvalonSTPkts(ValidatedBusDriver):
         if self.use_empty:
             empty = BinaryValue(n_bits=len(self.bus.empty), bigEndian=False)
 
+        # Make sure we start sendin data in ReadWrite cycle
+        yield clkedge
+
         # Drive some defaults since we don't know what state we're in
         if self.use_empty:
             self.bus.empty <= 0
